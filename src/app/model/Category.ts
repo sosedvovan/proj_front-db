@@ -1,10 +1,15 @@
 export class Category {
-    id?: number | any;  //any тк сюда null подаем при создании новой категории
-                        // тк мемори дб используем
-    title?: string | any;
+    id: number;
+    title: string;
+    completedCount: number;
+    uncompletedCount: number;
 
-    constructor(id?: number | any, title?: string) {
+    // ? означает необязательный для передачи параметр
+    constructor(id: number, title: string, completedCount?: number | any,
+                uncompletedCount?: number | any) {
         this.id = id;
         this.title = title;
+        this.completedCount = completedCount;
+        this.uncompletedCount = uncompletedCount;
     }
 }
