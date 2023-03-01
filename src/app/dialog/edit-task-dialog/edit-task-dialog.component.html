@@ -1,0 +1,210 @@
+<!--<p>{{task.title}}</p>-->
+<!--в этом html отображаем то, что хотим видеть в
+открывающемся диалоговом окне, вызываемом из tasks.component.html-->
+
+<!--диалоговое окно состоит из 2-х частей - контент и экшен-->
+
+<!--редактирование/создания задачи-->
+<!--<mat-dialog-content> 1-я часть - контент-->
+<!--mat-dialog-title>{{dialogTitle}} - выводим название диалогового окна-->
+<mat-dialog-content>
+  <!--название задачи(таски)  -->
+  <p mat-dialog-title>{{dialogTitle}}</p>
+
+  <!--область, куда добавляем компоненты для ввода данных
+  (в этой области только лейбл для инпута, сам инпут, и кнопочка - очистить текстовое поле импута)  -->
+  <mat-form-field>
+
+    <!--<mat-label> - динамический лейбл для поля <input (работает и как плейсхолдер)  -->
+    <mat-label>Название (обязательно)</mat-label>
+    <!--matInput - атрибут - делает из обычного <input - материальный <input    -->
+    <!--#inputTitle - альяс для переменной tmpTitle чтобы сослаться в части экшена на tmpTitle    -->
+    <!--(keydown.enter)="onConfirm()" -  подчеркивает, но работает
+        при нажатии клавиши Enter - вызывается метод onConfirm()   -->
+    <!--[(ngModel)]="tmpTitle" - (ngModel это стринга = task.title, которую пользователь увидит в поле <imput
+        и которую пользователь может изменить  и при нажатии Enter tmpTitle получит обновленное значение).
+        те атрибут для 2-х стороннего связывания
+        ngModel(атрибут получения данных из-в DOModel) - позволяет связать атрибут с переменной
+        если пользователь вводит данные, тогда данные сохранятся в переменной "tmpTitle".
+        [(ngModel)] : [ngModel]сначала считывает данные из переменной "tmpTitle"(название задачи)
+        и эти данные отображаются в диалоговом окне,
+        а (ngModel)далее, когда пользователь введет данные, эти данные автоматически
+        сохранятся в переменной "tmpTitle"-->
+    <input
+      #inputTitle
+      matInput
+
+      [(ngModel)]="tmpTitle"
+      (keydown.enter)="onConfirm()">
+    <!-- (keyup.enter)="onConfirm()"   -->
+    <!-- по нажатию на enter можем сразу сохранить задачу
+    добавь в атрибут инпута-->
+
+    <!--кнопка очистки поля ввода -
+        *ngIf="tmpTitle.trim().length > 0" - показывается если что-то отображается в поле ввода
+        (click)="tmpTitle= ''" - при клике по полю - переменную tmpTitle приравниваем к ''
+           и двустороннее связывание сработает-->
+    <button
+      *ngIf="tmpTitle.trim().length > 0"
+      matSuffix mat-icon-button aria-label="Clear"
+      (click)="tmpTitle= ''"
+      class="size25">
+      <mat-icon>clear</mat-icon>
+    </button>
+    <!--атрибуты mat-button и mat-icon-button конфликтовали -> оставил один из них  -->
+  </mat-form-field>
+
+
+  <!--    выпадающий список категорий-->
+  <mat-form-field>
+    <mat-label>Укажите категорию</mat-label>
+    <!--при открытии диалогового окна пользователь увидит ngModel(категорию)
+    причем ngModel возьмет первоначальное значение у переменной tmpCategory.
+    далее пользователь в поле инпут изменит категорию из выпадающего списка->
+    -> значит ngModel примет на себя новое значение и ngModel передаст
+    это новое значение переменной tmpCategory. Далее при нажатии СОХРАНИТЬ
+    сработает механизм обновления таски в родительском вызывающем окно методе
+    и в дб и на странице браузера обновятся данные-->
+    <mat-select [(ngModel)]="tmpCategory">
+      <!--здесь определяем - что именно будет выпадать из выпадающего списка.
+          переменная [value] получит в себя выбранный пользователем вариант из списка
+          а именно объект-категория(или null если выбрать Без категории) тк указали [value]="cat"
+          а далее ngModel примет в себя этот выбранный вариант [value] и передаст его в tmpCategory-->
+      <!--{{cat.title}} - это пункты выпадающего списка, которые видит пользователь     -->
+      <!--то учитываем, что в [value] мы кладем не id, а сам объект cat    -->
+      <mat-option [value]="null">Без категории</mat-option>
+      <mat-option *ngFor="let cat of categories" [value]="cat">
+        {{cat.title}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+
+  <!--    выпадающий список приоритетов аналогичен выпадающему списку категорий-->
+  <mat-form-field>
+    <mat-label>Укажите приоритет</mat-label>
+    <mat-select [(ngModel)]="tmpPriority">
+      <mat-option [value]="null">Без приоритета</mat-option>
+      <mat-option *ngFor="let priority of priorities" [value]="priority">
+        {{priority.title}}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+
+  <!--    календарь - срок выполнения
+  здесь фишка в том, что надо связать <input и mat-datepicker(сам календарь)-->
+<!--matInput - сказали что этот <inpu - материальный  -->
+<!--#inputDate это альяс для этого тега <input, чтобы к нему обращаться далее  -->
+<!--readonly="true" - чтобы вручную дату нельзя было вводить  -->
+<!--[matDatepicker]="picker" - мы связали <input(его свойство [matDatepicker]) с календарем(по альясу календаря - #picker)  -->
+<!--[(ngModel)]="tmpDate" - в ngModel считываем значение даты и показываем старую
+ дату в форме, если дату-ngModel изменит пользователь, тогда новое значение запишется в tmpDate-->
+  <mat-form-field>
+
+    <input
+      matInput placeholder="Укажите срок выполнения" #inputDate
+      readonly="true"
+
+      [matDatepicker]="picker"
+      [(ngModel)]="tmpDate"
+
+      (click)="picker.open()">
+
+    <!-- иконка календаря (для открытия календаря) -->
+    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+
+    <!-- компонент календаря (открывается по нажатию)-->
+    <mat-datepicker #picker></mat-datepicker>
+
+    <!--кнопка очистки даты -->
+    <!--*ngIf="inputDate.value.trim().length > 0" - показываем кнопку очистки
+      если в поле есть какая то дата в текстовом поле <input-->
+<!--(click)="tmpDate = null" - по нажатию на эту кнопку, мы дату очищаем    -->
+    <button
+      *ngIf="inputDate.value.trim().length > 0"
+
+      mat-button matSuffix mat-icon-button aria-label="Clear"
+
+      (click)="tmpDate = null" class="size25">
+
+      <mat-icon>clear</mat-icon>
+
+    </button>
+<!--mat-button  и mat-icon-button  как то конфликтуют и
+подчеркивается красным, но работает-->
+
+  </mat-form-field>
+
+</mat-dialog-content>
+
+
+
+
+
+
+
+
+<!--  кнопки возможных действий 2-я часть - экшен-->
+<mat-dialog-actions>
+
+  <div class="row">
+
+    <!--  а class="row" - строку-row не создали в отдельном диве и работает так-->
+    <div class="col-md-6 col-12">
+
+      <!--кнопка - сохранить  -->
+      <!--(click)="onConfirm()" - тоже вызывает метод onConfirm()  -->
+      <!--[disabled]="inputTitle.value.trim().length==0" - не активна при условии
+      (inputTitle это альяс для tmpTitle)  -->
+      <button
+        (click)="onConfirm()" [disabled]="inputTitle.value.trim().length==0"
+        color="primary"
+        mat-raised-button>  <!-- если пустой текст - кнопка "Сохранить" будет недоступна -->
+        Сохранить
+      </button>
+
+      <!--кнопка отмена - вызывает метод onCancel()-->
+      <button (click)="onCancel()" mat-raised-button>
+        Отмена
+      </button>
+
+    </div>
+
+    <!--  возможные операции над задачей возьмем в отдельный div
+          и для этих кнопок - text-right(text-end)
+          и mdc-text-field-helper-line - чтобы в строчку эти 2-е кнопки-->
+    <div
+      class="col-md-6 col-12 text-end mdc-text-field-helper-line">
+
+      <!--*ngIf="!task.completed" - показываем или эту кнопку или следующую
+          (click) вызывает соответствующий метод в классе этого компонента-->
+      <button
+        mat-button class="green"
+        *ngIf="!task.completed  && canActivateDesactivate()"
+        (click)="complete()">
+        Завершить задачу
+      </button>
+
+      <button
+        mat-button class="green"
+        (click)="activate()"
+        *ngIf="task.completed  && canActivateDesactivate()">
+        Активировать
+      </button>
+
+
+      <!--кнопка Удалить задачу - вызывает метод delete() в котором
+          вызывается диалоговое окно для подтверждения удаления
+          class="red" - добавили в глобальные стили-->
+      <button
+        mat-button
+        class="red"
+        (click)="delete()"
+        *ngIf="canDelete()">
+        Удалить задачу
+      </button>
+    </div>
+  </div>
+
+</mat-dialog-actions>

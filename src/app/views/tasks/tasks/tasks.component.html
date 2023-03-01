@@ -1,0 +1,395 @@
+<!--включили строки бутстрапа-->
+<div class="row">
+
+<!--пошла первая строка бутстрапа- 4-ре элемента, каждый занимает по 3 колонки
+  элементы:
+  -поиск задач по буквам - по вхождению
+  -фильтр по статусу
+  -фильтр по приоритету
+  -кнопка - Сбросить фильтры-->
+  <div class="col-md-3 col-sm-12">
+    <!--    поиск задач-->
+
+<!--материальная форма (в ней одно поле ввода и саб-кнопка очистки)-->
+    <mat-form-field>
+<!--поле <input:
+      #filterInput - альяс, чтобы обратится к этому тегу в дальнейшем
+      matInput- сделали форму материальной
+      [(ngModel)]="searchTaskText" - это поле ввода будет работать через переменную searchTaskText из класса
+      (keyup)="onFilterByTitle()" - по нажатии любой клавиши в поле ввода срабатывает метод onFilterByTitle()
+      (keydown.escape)="searchTaskText = ''; onFilterByTitle()" - нажатие на escape очищает поле ввода и далее
+      вызывается метод onFilterByTitle()
+      -->
+      <input
+        #filterInput
+        matInput
+        placeholder="Поиск в текущей категории"
+        [(ngModel)]="searchTaskText"
+        (keyup)="onFilterByTitle()"
+        (keydown.escape)="searchTaskText = ''; onFilterByTitle()">
+
+<!--кнопка - в поле ввода для очистки поля от введенного в него текста
+     <mat-icon>clear</mat-icon> - подгружает иконку крестика-->
+      <button
+        *ngIf="filterInput.value.trim().length > 0"
+        class="clear-icon size25 gray"
+        matSuffix mat-icon-button
+        aria-label="Clear"
+        (click)="searchTaskText = ''; onFilterByTitle()">
+        <mat-icon>clear</mat-icon>
+      </button>
+    </mat-form-field>
+  </div>
+<!--mat-button вынес сюда в комменты, а то подчеркивает красным -->
+
+<!--    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\-->
+
+    <div class="col-md-3 col-sm-12">
+
+<!--    https://stackoverflow.com/questions/47568626/how-do-i-create-a-callback-on-material-angular-select
+        это про то, как mat-select использовать-->
+
+    <!--    фильтр по статусу -->
+      <!--материальная форма (в ней один выпадающий список)-->
+    <mat-form-field>
+
+<!--создаем выпадающий список:
+    [value]="selectedStatusFilter" это дефолтное будево значение заданное с помощью переменной класса
+    selectedStatusFilter первоначально инициализируем = null чтобы при первоначальной загрузки страницы
+      срабатывала строчка:
+      (valueChange)="onFilterByStatus($event)" -> запускался метод onFilterByStatus(null) с null в аргументах
+      и в таблице тасок отображались таски со всеми возможными статусами(а не только true или false)
+      ПРИНЦИП РАБОТЫ ЭТОГО ВЫПАДАЮЩЕГО СПИСКА:
+      при выборе из выпадающего списка(valueChange) срабатывает метод onFilterByStatus($event), в
+      аргументы которого попадает текущее [value] (а дефолт-первоначальное [value] уже имеется)-->
+      <mat-select [value]="selectedStatusFilter"
+                  (valueChange)="onFilterByStatus($event)"
+                  placeholder="Фильтр по статусу" #statusFilter>
+
+        <mat-option [value]="null">Все статусы</mat-option>
+        <mat-option [value]="true">Завершенные задачи</mat-option>
+        <mat-option [value]="false">Незавершенные задачи</mat-option>
+      </mat-select>
+
+<!--это саб кнопка для выпадающего списка - запускает метод onFilterByStatus(null) с null в аргументах
+      при нажатии на нее, и в таблице тасок отображались таски со всеми возможными статусами
+      (а не только true или false)
+      <mat-icon>clear</mat-icon> - подгружает иконку крестика-->
+      <button
+        *ngIf="selectedStatusFilter != null"
+        class="clear-icon size25 gray"
+        matSuffix mat-icon-button
+        aria-label="Clear"
+        (click)="$event.stopPropagation(); onFilterByStatus(null)">
+        <mat-icon>clear</mat-icon>
+      </button>
+    </mat-form-field>
+    <!--mat-button вынес сюда в комменты, а то подчеркивает красным -->
+  </div>
+
+  <!--    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\-->
+
+  <div class="col-md-3 col-sm-12">
+
+    <!--    фильтр по приоритету -->
+
+    <!--материальная форма (в ней один выпадающий список)-->
+<!--выпадающий список выбора аналогичен предыдущему-выше,
+    также для [value] есть дефолтное значение с котрым запускается метод onFilterByPriority($event)
+     при загрузки страницы
+     Сам список формируется следующим образом:
+     первоя строка вернет [value]="null" (те покажем таски со всеми приоритетами без фильтрации по этому полю
+     далее список формируем с помощью системной директивы *ngFor итерируясь по массиву priorities,
+     полученному через @Input() от смарт компоненты)-->
+    <mat-form-field>
+
+      <mat-select [value]="selectedPriorityFilter"
+                  (valueChange)="onFilterByPriority($event)"
+                  placeholder="Фильтр по приоритетам">
+        <mat-option [value]="null">Все приоритеты</mat-option>
+        <mat-option *ngFor="let priority of priorities"
+                    [value]="priority">
+                    {{priority.title}}
+        </mat-option>
+      </mat-select>
+<!---->
+
+<!--саб-кнопка сброса на дефолт-выбор. аналогично той которая выше(см выше)
+<mat-icon>clear</mat-icon> - подгружает иконку крестика-->
+      <button
+        *ngIf="selectedPriorityFilter != null"
+        class="clear-icon size25 gray"
+        matSuffix mat-icon-button
+        aria-label="Clear"
+        (click)="$event.stopPropagation(); onFilterByPriority(null); ">
+        <mat-icon>clear</mat-icon>
+      </button>
+<!--mat-button  -->
+    </mat-form-field>
+
+  </div>
+
+  <!--    \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\-->
+
+<!-- 2-е кнопки - Сбросить фильтры и Добавить-->
+
+<!--  так же занимает три колонки-->
+  <div class="col-md-3 col-sm-12 text-right">
+<!-- и внутри этих трех колонок запустим еще строку бутстрапа(для 2-х кнопок по col-6)-->
+    <div class="row">
+
+      <div class="text-left col-6">
+
+<!--*ngIf - кнопка видна при условии, если в одном из выпадающих списках поиска установленны какие то значения
+         или в поле ввода поиска по вхождению что то написано и это не пробелы(не равно пустой строке)
+         (click) - при нажатии на эту кнопку останавливаются все запланированные действия ($event.stopPropagation();),
+                   значения в выпадающих списках для поиска по статусу и приоритету сбрасывается на null,
+                   переменная для поиска по вхождению приравнивается к '' и запускаем метод onFilterByTitle()(поиск по вхождению)
+         -->
+        <button
+          *ngIf="selectedStatusFilter != null || selectedPriorityFilter != null || (searchTaskText != null && searchTaskText.trim() != '') "
+          matSuffix mat-button
+          aria-label="Clear"
+          (click)="$event.stopPropagation(); onFilterByStatus(null); onFilterByPriority(null); searchTaskText = ''; onFilterByTitle()">
+          Сбросить фильтры
+        </button>
+
+      </div>
+
+<!--      кнопка добавить ...-->
+      <div class="text-right col-6">
+        <button mat-raised-button color="primary"
+                (click)="openAddTaskDialog()">
+          Добавить
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+<!--////////////////////////////////////////////////////////////////////////////-->
+
+
+
+<!--  пошла вторая строка бутстрапа, занимающая 12 колонок и в ней таблица с тасками на все 12 колонок - col-md-12-->
+  <div class="col-md-12 task-list">
+
+<!--заголовок-header всей таблицы тасок-->
+<div class="card">
+  <div class="card-header card-header-warning">
+    <h4 class="card-title">Список задач</h4>
+  </div>
+
+  <!--тело-body всей таблицы тасок-->
+  <div class="card-body table-responsive">
+
+<!--    обернем таблицу в этот div - показываем таблицу если есть данные в массиве tasks
+        но первым условием убедимся что tasks != null, что есть у чего брать length - иначе undefined-->
+    <div *ngIf="tasks && tasks.length > 0" class="card-body table-responsive">
+
+<!--[dataSource]="dataSource" переменной даем значение из класса
+   теперь таблица будет знать откуда брать данные-->
+<!--mat-table сказали, что таблица из Материи   -->
+<!--matSort включаем сортировку в таблице    -->
+    <table [dataSource]="dataSource" mat-table matSort>
+
+<!--далее будем заполнять таблицу с пом ng-container:     -->
+
+      <!--1-я колонка:  цвет приоритета  -->
+<!--matColumnDef="color" - указали как будет называться столбец
+    (берем из спец массива из класса) (присваиваем именно стрингу- те без [...])     -->
+<!--*matHeaderCellDef - структурная директива отвечает за содержание элемента
+      - здесь означает что "color" будет заголовком столбца(именно здесь нет заголовка столбца)-->
+<!--mat-header-cell - атрибут-директива отвечает за стиль элемента в заглавной ячейки     -->
+<!--*matCellDef="let task" - определили переменную с пом которой будем итеририваться      -->
+<!--[style.background-color]="getPriorityColor(task)" - цвет бекграунда ячейки
+      будем получать из метода getPriorityColor(task)-->
+<!--class="col-color" - определяем ширину ячейки в нашем css файле      -->
+<!--mat-cell - атрибут-директива отвечает за стиль элемента в ячейке     -->
+      <ng-container matColumnDef="color">
+        <th *matHeaderCellDef mat-header-cell></th>
+        <td *matCellDef="let task" [style.background-color]="getPriorityColor(task)" class="col-color"
+            mat-cell></td>
+      </ng-container>
+
+
+      <!--2-я колонка: нумерация-->
+<!--let index = index(эту секвенцию предоставляет Ангуляр)       -->
+      <ng-container matColumnDef="id">
+        <th *matHeaderCellDef mat-header-cell></th>
+        <td *matCellDef="let index = index;" class="col-id" mat-cell>
+
+          {{index + 1}}
+
+        </td>
+      </ng-container>
+
+
+      <!--3-я колонка: название задачи-->
+<!--Название - начиная с этого столбца даем названия столбцам      -->
+<!--[class.completed]="task.completed" - добавляем наш силь(перечеркивание) если выполнен буль      -->
+<!--mat-sort-header - эту директиву добавляем к колонке которая должна уметь сортироваться      -->
+<!--(click)="openEditTaskDialog(task)" при клике по одной таске вызываем метод класса     -->
+<!--.pointer - стиль в глобальных стилях - мышка превращ в руку при наведении      -->
+      <ng-container matColumnDef="title">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header [ngClass]="'color-header-text'"> Название</th>
+        <td *matCellDef="let task"
+            (click)="openEditTaskDialog(task)"
+            [class.completed]="task.completed" class="col-title pointer" mat-cell>
+
+          {{task.title}}
+
+        </td>
+      </ng-container>
+
+      <!--4-я колонка: дата выполнения-->
+<!--[ngClass]="... - массив с нашими стилями(.селекторами) и условиями их применения     -->
+<!--task.date | date: "medium" - это Pipe - спец класс, через который проходят данные и как то изменяютя      -->
+      <ng-container matColumnDef="date">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header [ngClass]="'color-header-text'"> Срок</th>
+        <td *matCellDef="let task" [ngClass]="{'completed': task.completed, 'novalue': task.date == null}"
+            class="col-date"
+            mat-cell>
+
+<!--          {{task.date != null ? (task.date | date: "medium") : "Без даты"}}-->
+
+          {{task.date | taskDate}}
+
+        </td>
+      </ng-container>
+
+      <!--5-я колонка: приоритет-->
+      <ng-container matColumnDef="priority">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header [ngClass]="'color-header-text'"> Приоритет</th>
+        <td *matCellDef="let task" class="col-priority"
+            [ngClass]="{'completed': task.completed, 'novalue': task.priority == null}"
+            mat-cell
+        >
+
+          {{task.priority != null ? task.priority.title : "Без приоритета"}}
+
+
+        </td>
+      </ng-container>
+
+      <!--6-я колонка: категория-->
+<!--(click)="!task.completed && task.category && onSelectCategory(task.category)" -
+      ячейку сделали кликабельной - при условии что таска не завершена и таске
+      назначена категория вызываем метод onSelectCategory в котором посылаем emit
+      с данной категорией в главную компоненту-->
+      <ng-container matColumnDef="category">
+        <th *matHeaderCellDef mat-header-cell mat-sort-header [ngClass]="'color-header-text'"> Категория</th>
+        <td *matCellDef="let task" class="col-category"
+            [ngClass]="{'completed': task.completed, 'novalue': task.category == null, 'link': !task.completed && task.category}"
+            (click)="!task.completed && task.category && onSelectCategory(task.category)"
+            mat-cell
+        >
+
+          {{task.category ? task.category.title : "Без категории"}}
+
+        </td>
+      </ng-container>
+
+
+      <!--доступные действия над задачей-->
+<!--это 2-е иконки - редактировать задачу и удалить задачу      -->
+<!--matColumnDef="operations" - operations это название столбца в массиве displayedColumns      -->
+<!--<th mat-header-cell *matHeaderCellDef></th> - тег для заголовка,
+     но мы заголовок не указали в этой колонке, *matHeaderCellDef - директива материального заголовка      -->
+<!--В <td:  class="col-operations" - стиль из этого компонента для ширины столбца
+            [class.completed]="task.completed" применится перечеркивание если задача завершена
+            *matCellDef="let task" - объявили переменную, чтобы дальше с ней работать в итерации-->
+      <ng-container matColumnDef="operations">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td class="col-operations" mat-cell *matCellDef="let task" [class.completed]="task.completed">
+
+          <!--Далее две кнопки иконочного стиля(mat-icon-button)
+               сама иконка задается словами delete и edit
+               class="delete-icon" - из css этого класса
+               метод openDeleteDialog(task) - откроет диалоговое окно подтверждения удаления-->
+          <button mat-icon-button (click)="openDeleteDialog(task)"
+                  class="delete-icon"
+          >
+            <mat-icon aria-hidden="false">delete</mat-icon>
+          </button>
+
+          <!--при клике вызывается уже старый метод openEditTaskDialog(task)
+               кот откроет диалоговое окно для редактирования-->
+          <button mat-icon-button (click)="openEditTaskDialog(task)"
+                  class="edit-icon"
+          >
+
+            <mat-icon aria-hidden="false">edit</mat-icon>
+          </button>
+
+        </td>
+      </ng-container>
+
+
+      <!--            галочка для выполнения/активации задачи-->
+<!--matColumnDef="select" - select это название столбца в массиве displayedColumns       -->
+<!--*matHeaderCellDef директива для названия загоровка столбца(здесь без названия)      -->
+<!--col-select в нашем css этой компоненты      -->
+<!--*matCellDef="let task" задали переменную для итерации      -->
+
+      <ng-container matColumnDef="select">
+
+        <th mat-header-cell *matHeaderCellDef></th>
+
+        <td class="col-select text-right" mat-cell *matCellDef="let task">
+
+          <!--САМ ЧЕКБОКС      -->
+          <!--$event.stopPropagation() - системный метод говорит перестать выполнять все
+               цепочки дальнейших действий над строкой-->
+          <!--(change)="$event ? onToggleStatus(task) : null" - вызывается тогда,
+                когда меняется галочка : если галочка поставленна(событие $event существует)
+                тогда вызываем метод onToggleStatus(task) иначе ничего не делаем.
+                В onToggleStatus(task) - ставим task.completed на противоположный  и emit() делаем-->
+          <!--[checked]="task.completed" - для первоначального отображения выбранности галочки
+                или не выбранности-->
+          <mat-checkbox
+
+            (click)="$event.stopPropagation()"
+
+            (change)="$event ? onToggleStatus(task) : null"
+
+            [checked]="task.completed"
+          >
+
+          </mat-checkbox>
+
+
+        </td>
+      </ng-container>
+
+
+
+
+
+
+      <!--СЛЕДУЮЩИЕ 2-Е СТРОЧКИ ЗАПУСКАЮТ МЕХАНИЗМ ОТОБРАЖЕНИЯ КОНТЕЙНЕРОВ
+      1-Я tr - ЗАПУСКАЕТ ЗАГОЛОВОК ТАБЛИЦЫ
+      2-Я tr - ДЕЛАЕТ СТРОКИ (ВСЕ ЯЧЕЙКИ ОПИСАННЫЕ ВЫШЕ В ОДНОЙ ИТЕРАЦИИ) ИЗ ВСЕХ ТАСКОВ-->
+<!--displayedColumns - ЭТО СПЕЦ МАССИВ В КЛАССЕ С НАИМЕНОВАНИЕМ СТОЛБЦОВ-определяет
+    порядок и наличие столбцов в таблице      -->
+<!--*matRowDef="let row; СОЗДАЛИ ЭТУ ПЕРЕМЕННУЮ ЧТОБЫ ИМЕТЬ В ДАЛЬНЕЙШЕМ ДОСТУП К КАЖДОЙ СТРОКЕ      -->
+      <!--  заголовок таблицы-->
+      <tr *matHeaderRowDef="displayedColumns; " mat-header-row></tr>
+
+      <!--  строки таблицы - набор строк из тегов td (порядок указывается в переменной displayedColumns) -->
+      <tr *matRowDef="let row; columns: displayedColumns;" mat-row></tr>
+
+    </table>
+
+<!--    этой строчкой включаем и настраиваем пагинацию -->
+    <mat-paginator [pageSizeOptions]="[ 10, 20, 50, 100]" showFirstLastButtons></mat-paginator>
+    </div>
+
+<!--    этот див покажем вместо таблицы если нет данных для отображения в массиве tasks-->
+    <div *ngIf="tasks && tasks.length == 0"><p class="not-found">Ничего не найдено</p></div>
+  </div>
+</div>
+</div>
+</div>
+

@@ -1,0 +1,101 @@
+<div class="container-fluid">
+
+  <!--ГЛАВНЫЙ row-->
+  <div class="row mb-4">
+
+    <!--ЭТО HTML ГЛАВНОГО КОМПОНЕНТА, КОТОРЫЙ АККУМУЛИРУЕТ В СЕБЕ ДОЧЕРНИЕ КОМПАНЕНТЫ-->
+    <!--ЗДЕСЬ В ТЕГАХ <app-... ПЕРЕДАЕМ В КЛАССЫ ДОЧЕК МАССИВЫ categories И tasks   -->
+    <!--А В КЛАССАХ ДОЧЕК ПРИМЕМ ЭТИ МАССИВЫ С ПОМ ДЕКОРАТОРА @Input() -->
+
+    <!--    ПОКАЗЫВАЕМ ЛЕВЫЙ СПИСОК С КАТЕГОРИЯМИ-->
+    <!--[categories]="categories" это передаем к дочернему в @Input()    -->
+    <!--(selectCategory)="onSelectCategory($event)" это получаем из дочернего @Output()
+        и в родительском app.component.ts запустится метод onSelectCategory($event)-->
+    <div class="col-lg-2 col-md-6 mb-md-0 mb-4">
+      <app-categories [categories]="categories"
+                      [selectedCategory]="selectedCategory"
+
+                      (deleteCategory)="onDeleteCategory($event)"
+                      (updateCategory)="onUpdateCategory($event)"
+                      (addCategory)="onAddCategory($event)"
+
+                      (searchCategory)="onSearchCategory($event)"
+                      (selectCategory)="onSelectCategory($event)">
+
+      </app-categories>
+    </div>
+
+    <!--  10-ЯТЬ КОЛОНОК - В НИХ РАСПОЛОЖИМ САБ-row -->
+    <div class="col-lg-10">
+
+      <!--САБ row-->
+      <div class="row mb-4 my-z-index">
+
+        <!--ВСЯ 1-Я СТРОКА ДЛЯ  ХЕДЕРА     -->
+        <div class="col-lg-12 col-md-6 mb-md-0 mb-4">
+          <!--    ПОКАЗЫВАЕМ ХЕДЕР
+      если selectedCategory не пустая передаем title категории, иначе передаем 'Все'-->
+          <app-header
+            [categoryName]="selectedCategory ? selectedCategory.title: 'Все'"
+            (toggleStat)="toggleStat($event)"
+            [showStat]="showStat"
+          ></app-header>
+        </div>
+
+        <!--ВСЯ 2-Я СТРОКА ДЛЯ СТАТИСТИКИ      -->
+        <div class="col-lg-12">
+          <!--    ПОКАЗЫВАЕМ СТАТИСТИКУ
+          передаем :
+          сколько задач всего в категории
+          сколько завершенных
+          сколько незавершенных-->
+          <app-stat
+            [totalTasksInCategory]="totalTasksCountInCategory"
+            [completeTasksInCategory]="completedCountInCategory"
+            [uncompleteTasksInCategory]="uncompletedCountInCategory"
+            [showStat]="showStat"
+          ></app-stat>
+        </div>
+
+        <!--ВСЯ 3-Я СТРОКА ДЛЯ ТАБЛИЦЫ ТАСОК      -->
+        <div class="col-lg-12">
+          <!--    ПОКАЗЫВАЕМ ТАБЛИЦУ С ТАСКАМИ-->
+          <div class="card">
+            <div class="card-body px-0 pb-2">
+              <app-tasks [tasks]="tasks"
+                         [priorities]="priorities"
+
+                         (filterByTitle)="onSearchTasks($event)"
+                         (filterByStatus)="onFilterTasksByStatus($event)"
+                         (filterByPriority)="onFilterTasksByPriority($event)"
+
+                         [selectedCategory]="selectedCategory"
+                         (addTask)="onAddTask($event)"
+                         (updateTask)="onUpdateTask($event)"
+                         (deleteTask)="onDeleteTask($event)"
+                         (selectCategory)="onSelectCategory($event)"
+              ></app-tasks>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!--  строка на 12 столбцов для футера-->
+    <div class="col-lg-12">
+      <app-footer></app-footer>
+    </div>
+
+
+    <!--    ПОКАЗЫВАЕМ ТАБЛИЦУ С ТАСКАМИ-->
+    <!--  <div class="col-lg-7 col-md-6 mb-md-0 mb-4">-->
+    <!--   -->
+    <!--  </div>-->
+
+
+  </div>
+</div>
+
+
